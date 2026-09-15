@@ -7,28 +7,58 @@ import ProductCard from "./components/ProductCard"
 
 
 function App() {
-  const products=[
-    {id:1,name:"Mobile",price:1200},
-    {id:2,name:"Laptop",price:1800},
-    {id:3,name:"iPhone",price:100}
-  ]
-  const [Name, setName] = useState("Patil")
-  function handleClick(e){
-    const value=e.target.value
-    setName(value)
-    console.log(e.target.value);
+  const [formData,setFormData]=useState({
+    name:"",
+    email:"",
+    password:""
+  })
+
+  function handleChange(event){
+    setFormData({...formData,[event.target.name]:event.target.value})
+  }
+
+  function handleSubmit(event){
+    event.preventDefault()
+    console.log("Form submitted");
     
   }
 
   return(
     <>
-    <input type="text" onChange={handleClick} value={Name} />
-    <button>Name is {Name}</button>
-    {products.map((product)=>{
-      return(
-        <ProductCard name={product.name} price={product.price} key={product.id} />
-      )
-    })}
+    <form onSubmit={handleSubmit}>
+
+      <label htmlFor="name">Name: </label>
+      <input 
+        id='name'
+        name='name'
+        value={formData.name}
+        onChange={handleChange}
+      /><br />
+
+      <label htmlFor="email">Email: </label>
+      <input 
+        id='email'
+        name='email'
+        value={formData.email}
+        onChange={handleChange}
+      /><br />
+
+      <label htmlFor="password">Password: </label>
+      <input
+        id='password'
+        name='password'
+        value={formData.password}
+        onChange={handleChange}
+      /><br/>
+
+      <button type='submit'>
+        Register
+      </button>
+
+    </form>
+
+    <p>Name : {formData.name}</p>
+    <p>Email : {formData.email}</p>
     </>
   )
 }
