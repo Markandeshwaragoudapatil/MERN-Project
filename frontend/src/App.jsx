@@ -9,18 +9,48 @@ import ProductCard from "./components/ProductCard"
 function App() {
   const [formData,setFormData]=useState({
     name:"",
-    email:"",
+    username:"",
     password:""
   })
+  const[message,setMessage]=useState("");
+  const[loading,setLoading]=useState(false);
+  const[error,setError]=useState("");
 
   function handleChange(event){
     setFormData({...formData,[event.target.name]:event.target.value})
   }
 
-  function handleSubmit(event){
-    event.preventDefault()
-    console.log("Form submitted");
-    
+  async function handleSubmit(event){
+    event.preventDefault();
+    setLoading(true)
+    setError("")
+    try{
+      const response=await fetch("http://localhost:3000/login",{
+        method:"POST",
+        headers:{
+          "Content-Type":"application/json"
+        },
+        body:JSON.stringify(formData)
+      });
+      console.log("Form submitted");
+      const data=await response.json()
+
+      if(!response.ok){
+        setError("Registration failed")
+        return
+      }
+      console.log(data.message);
+      setMessage(data.message)
+      setFormData({
+        name:"",
+        username:"",
+        password:""
+      })     
+    }catch(error){
+      console.log("NetWork Error : ",error);  
+    }finally{
+      setLoading(false)
+    } 
   }
 
   return(
@@ -35,11 +65,11 @@ function App() {
         onChange={handleChange}
       /><br />
 
-      <label htmlFor="email">Email: </label>
+      <label htmlFor="username">UserName: </label>
       <input 
-        id='email'
-        name='email'
-        value={formData.email}
+        id='username'
+        name='username'
+        value={formData.username}
         onChange={handleChange}
       /><br />
 
@@ -51,14 +81,14 @@ function App() {
         onChange={handleChange}
       /><br/>
 
-      <button type='submit'>
-        Register
+      <button type='submit' disabled={loading}>
+        {loading?"Registring..":"Register"}
       </button>
 
     </form>
 
-    <p>Name : {formData.name}</p>
-    <p>Email : {formData.email}</p>
+    <p>{message}</p>
+    {error && <p>{error}</p>}
     </>
   )
 }
