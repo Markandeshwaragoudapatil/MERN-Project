@@ -1,5 +1,4 @@
 const express = require("express");
-const asyncHandler=require("../utils/asyncHandler");
 
 const router = express.Router();
 

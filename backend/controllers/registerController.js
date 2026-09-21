@@ -1,4 +1,3 @@
-const { addSession } = require("../services/loginService");
 const { addUser } = require("../services/profileService");
 const {createToken}=require("../utils/jwt")
 

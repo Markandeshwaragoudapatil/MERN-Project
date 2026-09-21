@@ -8,7 +8,6 @@ import ProductCard from "./components/ProductCard"
 
 function App() {
   const [formData,setFormData]=useState({
-    name:"",
     username:"",
     password:""
   })
@@ -17,18 +16,18 @@ function App() {
   const[error,setError]=useState("");
   const[access,setAccess]=useState(false);
   const [products,setProducts]=useState([])
-  const[profile,setProfile]=useState([])
+  const[profile,setProfile]=useState(null)
 
   function handleChange(event){
     setFormData({...formData,[event.target.name]:event.target.value})
   }
 
-  async function handleSubmit(event){
+  async function handleLogin(event){
     event.preventDefault();
     setLoading(true)
     setError("")
     try{
-      const response=await fetch("http://localhost:3000/register",{
+      const response=await fetch("http://localhost:3000/login",{
         method:"POST",
         headers:{
           "Content-Type":"application/json"
@@ -41,7 +40,7 @@ function App() {
 
       if(!response.ok){
         setMessage(data.message)
-        setError("Registration failed");
+        setError("Login failed");
         setAccess(false);
         setProfile([])
         return
@@ -50,7 +49,6 @@ function App() {
       setMessage(data.message);
       setAccess(true)
       setFormData({
-        name:"",
         username:"",
         password:""
       })     
@@ -86,7 +84,7 @@ function App() {
     }
   }
 
-  async function getProfile(event) {
+  async function handleProfile(event) {
     try{
       const response=await fetch("http://localhost:3000/profile",{
         method:"GET",
@@ -102,17 +100,27 @@ function App() {
     
   }
 
+  async function handleLogout(event){
+    try{
+      const response=await fetch("http://localhost:3000/logout",{
+        method:"DELETE",
+        credentials:"include"
+      });
+      const data=await response.json();
+      console.log("Delete response: ",data);
+      setAccess(false);
+      setProducts([])
+      setProfile(null)
+      setMessage("")
+      
+    }catch(error){
+      console.log("Network error:",error);
+    }
+  }
+
   return(
     <>
-    <form onSubmit={handleSubmit}>
-
-      <label htmlFor="name">Name: </label>
-      <input 
-        id='name'
-        name='name'
-        value={formData.name}
-        onChange={handleChange}
-      /><br />
+    <form onSubmit={handleLogin}>
 
       <label htmlFor="username">UserName: </label>
       <input 
@@ -131,7 +139,7 @@ function App() {
       /><br/>
 
       <button type='submit' disabled={loading}>
-        {loading?"Registering..":"Register"}
+        {loading?"Logging in..":"Login"}
       </button>
 
     </form>
@@ -146,8 +154,11 @@ function App() {
       <ProductCard key={index} name={product.name} price={product.price} />
     ))}
 
-    <button onClick={getProfile}>
+    <button onClick={handleProfile}>
       Get Profile
+    </button>
+    <button onClick={handleLogout}>
+      LogOut
     </button>
     {profile && profile.name}
     </>
