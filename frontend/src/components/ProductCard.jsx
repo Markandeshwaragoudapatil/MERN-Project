@@ -1,15 +1,15 @@
-function ProductCard({ name, price,id }) {
+function ProductCard({ name, price,id,onSelect }) {
     async function handleViewProduct(){
-        try{
-           const response=await fetch(`http://localhost:3000/products/${id}`,{
-                method:"GET",
-                credentials:'include'
-            })
-            const data=await response.json();
-            console.log(data.product); 
-        }catch(error){
-            console.log("Network Error : ",error);    
-        }        
+        onSelect({name,price})
+        // try{
+        //    const response=await fetch(`http://localhost:3000/products/${id}`,{
+        //         method:"GET",
+        //         credentials:'include'
+        //     })
+        //     const data=await response.json();
+        // }catch(error){
+        //     console.log("Network Error : ",error);    
+        // }        
     }
 
     return (

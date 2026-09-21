@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import heroImg from './assets/hero.png'
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
@@ -17,8 +17,34 @@ function App() {
   const[access,setAccess]=useState(false);
   const[profile,setProfile]=useState(null)
   const [products,setProducts]=useState([])
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [productsLoading, setProductsLoading] = useState(false);
   const [productsError, setProductsError] = useState("");
+
+  useEffect(() => {
+    async function fetchProducts() {
+        try {
+            const response = await fetch("http://localhost:3000/products", {
+                method: "GET",
+                credentials: "include"
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                console.log("Error:", data.message);
+                return;
+            }
+
+            setProducts(data);
+
+        } catch (error) {
+            console.log("Network Error:", error);
+        }
+    }
+    fetchProducts();
+    console.log("Fetching products...");
+  }, []);  
 
   function handleChange(event){
     setFormData({...formData,[event.target.name]:event.target.value})
@@ -53,7 +79,7 @@ function App() {
       setFormData({
         username:"",
         password:""
-      })     
+      })  
     }catch(error){
       console.log("NetWork Error : ",error);  
     }finally{
@@ -61,8 +87,7 @@ function App() {
     } 
   }
 
-  async function handleProducts(event) {
-    event.preventDefault();
+  async function handleProducts() {
     setProductsLoading(true);
     setProductsError("")
 
@@ -73,9 +98,6 @@ function App() {
       });
 
       const data = await response.json();
-
-      // console.log("Response:", response);
-      // console.log("Products:", data);
 
       if (!response.ok) {
         setProductsError(data.message || "failed to load products")
@@ -108,6 +130,8 @@ function App() {
     
   }
 
+
+
   async function handleLogout(event){
     try{
       const response=await fetch("http://localhost:3000/logout",{
@@ -124,7 +148,9 @@ function App() {
     }catch(error){
       console.log("Network error:",error);
     }
+
   }
+
 
   return (
     <div className="app">
@@ -267,11 +293,12 @@ function App() {
                     id={product._id}
                     name={product.name}
                     price={product.price}
+                    onSelect={setSelectedProduct}
                   />
                 ))}
               </div>
             </div>
-          ):(!productsLoading && <p>No Products avaiable</p>)
+          ):(!productsLoading && <p>No Products available</p>)
           }
 
 
@@ -281,6 +308,12 @@ function App() {
           >
             Logout
           </button>
+          {selectedProduct && (
+            <div>
+              <h2>Name : {selectedProduct.name}</h2>
+              <p>Price : ₹{selectedProduct.price}</p>
+            </div>
+          )}
 
         </div>
       )}
