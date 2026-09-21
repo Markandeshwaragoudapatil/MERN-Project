@@ -17,6 +17,7 @@ function App() {
   const[error,setError]=useState("");
   const[access,setAccess]=useState(false);
   const [products,setProducts]=useState([])
+  const[profile,setProfile]=useState([])
 
   function handleChange(event){
     setFormData({...formData,[event.target.name]:event.target.value})
@@ -42,6 +43,7 @@ function App() {
         setMessage(data.message)
         setError("Registration failed");
         setAccess(false);
+        setProfile([])
         return
       }
       console.log(data.message);
@@ -82,6 +84,22 @@ function App() {
     } catch (error) {
       console.log("Network Error:", error);
     }
+  }
+
+  async function getProfile(event) {
+    try{
+      const response=await fetch("http://localhost:3000/profile",{
+        method:"GET",
+        credentials:"include"
+      })
+      const data=await response.json();
+      console.log("Profile response:",data);
+      
+      setProfile(data)
+    }catch(error){
+      console.log("Network Error: ",error);  
+    }
+    
   }
 
   return(
@@ -127,6 +145,11 @@ function App() {
     {products && products.map((product, index) => (
       <ProductCard key={index} name={product.name} price={product.price} />
     ))}
+
+    <button onClick={getProfile}>
+      Get Profile
+    </button>
+    {profile && profile.name}
     </>
   )
 }
