@@ -8,7 +8,7 @@ const registerUser = async (req, res) => {
     const token=createToken(newUser)
     res.cookie("token",token,{
         httpOnly:true,
-        secure:true
+        secure:false
     });
     return res.status(201).json({
         message: "User registered and logged in successfully",

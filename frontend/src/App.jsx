@@ -15,6 +15,8 @@ function App() {
   const[message,setMessage]=useState("");
   const[loading,setLoading]=useState(false);
   const[error,setError]=useState("");
+  const[access,setAccess]=useState(false);
+  const [products,setProducts]=useState([])
 
   function handleChange(event){
     setFormData({...formData,[event.target.name]:event.target.value})
@@ -25,22 +27,26 @@ function App() {
     setLoading(true)
     setError("")
     try{
-      const response=await fetch("http://localhost:3000/login",{
+      const response=await fetch("http://localhost:3000/register",{
         method:"POST",
         headers:{
           "Content-Type":"application/json"
         },
-        body:JSON.stringify(formData)
+        body:JSON.stringify(formData),
+        credentials:"include"
       });
       console.log("Form submitted");
       const data=await response.json()
 
       if(!response.ok){
-        setError("Registration failed")
+        setMessage(data.message)
+        setError("Registration failed");
+        setAccess(false);
         return
       }
       console.log(data.message);
-      setMessage(data.message)
+      setMessage(data.message);
+      setAccess(true)
       setFormData({
         name:"",
         username:"",
@@ -51,6 +57,31 @@ function App() {
     }finally{
       setLoading(false)
     } 
+  }
+
+  async function handleProducts(event) {
+    event.preventDefault();
+
+    try {
+      const response = await fetch("http://localhost:3000/products", {
+        method: "GET",
+        credentials: "include"
+      });
+
+      const data = await response.json();
+
+      console.log("Response:", response);
+      console.log("Products:", data);
+
+      if (!response.ok) {
+        console.log("Error:", data.message);
+        return;
+      }
+
+      setProducts(data);
+    } catch (error) {
+      console.log("Network Error:", error);
+    }
   }
 
   return(
@@ -82,13 +113,20 @@ function App() {
       /><br/>
 
       <button type='submit' disabled={loading}>
-        {loading?"Registring..":"Register"}
+        {loading?"Registering..":"Register"}
       </button>
 
+    </form>
+    <form onSubmit={handleProducts}>
+      <button disabled={!access}>Products</button>
     </form>
 
     <p>{message}</p>
     {error && <p>{error}</p>}
+    {access && <p>Access Granted</p>}
+    {products && products.map((product, index) => (
+      <ProductCard key={index} name={product.name} price={product.price} />
+    ))}
     </>
   )
 }
