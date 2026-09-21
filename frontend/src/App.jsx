@@ -15,8 +15,10 @@ function App() {
   const[loading,setLoading]=useState(false);
   const[error,setError]=useState("");
   const[access,setAccess]=useState(false);
-  const [products,setProducts]=useState([])
   const[profile,setProfile]=useState(null)
+  const [products,setProducts]=useState([])
+  const [productsLoading, setProductsLoading] = useState(false);
+  const [productsError, setProductsError] = useState("");
 
   function handleChange(event){
     setFormData({...formData,[event.target.name]:event.target.value})
@@ -61,6 +63,8 @@ function App() {
 
   async function handleProducts(event) {
     event.preventDefault();
+    setProductsLoading(true);
+    setProductsError("")
 
     try {
       const response = await fetch("http://localhost:3000/products", {
@@ -70,17 +74,21 @@ function App() {
 
       const data = await response.json();
 
-      console.log("Response:", response);
-      console.log("Products:", data);
+      // console.log("Response:", response);
+      // console.log("Products:", data);
 
       if (!response.ok) {
+        setProductsError(data.message || "failed to load products")
         console.log("Error:", data.message);
         return;
       }
 
       setProducts(data);
     } catch (error) {
+      setProductsError("Unable to connect server")
       console.log("Network Error:", error);
+    } finally{
+      setProductsLoading(false)
     }
   }
 
@@ -118,50 +126,166 @@ function App() {
     }
   }
 
-  return(
-    <>
-    <form onSubmit={handleLogin}>
+  return (
+    <div className="app">
 
-      <label htmlFor="username">UserName: </label>
-      <input 
-        id='username'
-        name='username'
-        value={formData.username}
-        onChange={handleChange}
-      /><br />
+      {!access ? (
+        <div className="auth-card">
 
-      <label htmlFor="password">Password: </label>
-      <input
-        id='password'
-        name='password'
-        value={formData.password}
-        onChange={handleChange}
-      /><br/>
+          <div className="auth-header">
+            <div className="logo">M</div>
 
-      <button type='submit' disabled={loading}>
-        {loading?"Logging in..":"Login"}
-      </button>
+            <h1>Welcome Back 👋</h1>
+            <p>Login to continue to your account</p>
+          </div>
 
-    </form>
-    <form onSubmit={handleProducts}>
-      <button disabled={!access}>Products</button>
-    </form>
+          <form onSubmit={handleLogin} className="login-form">
 
-    <p>{message}</p>
-    {error && <p>{error}</p>}
-    {access && <p>Access Granted</p>}
-    {products && products.map((product, index) => (
-      <ProductCard key={index} name={product.name} price={product.price} />
-    ))}
+            <div className="input-group">
+              <label htmlFor="username">Username</label>
 
-    <button onClick={handleProfile}>
-      Get Profile
-    </button>
-    <button onClick={handleLogout}>
-      LogOut
-    </button>
-    {profile && profile.name}
-    </>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                placeholder="Enter your username"
+                value={formData.username}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="input-group">
+              <label htmlFor="password">Password</label>
+
+              <input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="login-button"
+              disabled={loading}
+            >
+              {loading ? "Logging in..." : "Login"}
+            </button>
+
+          </form>
+
+          {message && (
+            <p className="success-message">
+              {message}
+            </p>
+          )}
+
+          {error && (
+            <p className="error-message">
+              {error}
+            </p>
+          )}
+
+        </div>
+      ) : (
+
+        <div className="dashboard">
+
+          <header className="dashboard-header">
+            <div>
+              <p className="small-text">MERN Dashboard</p>
+              <h1>Welcome back 👋</h1>
+            </div>
+
+            <div className="status">
+              <span className="status-dot"></span>
+              Logged in
+            </div>
+          </header>
+
+
+          <div className="dashboard-grid">
+
+            <button
+              className="dashboard-card"
+              onClick={handleProfile}
+            >
+              <div className="card-icon">👤</div>
+
+              <div>
+                <h2>My Profile</h2>
+                <p>View your account information</p>
+              </div>
+            </button>
+
+
+            <button
+              className="dashboard-card"
+              onClick={handleProducts}
+              disabled={productsLoading}
+            >
+              <div className="card-icon">🛒</div>
+
+              <div>
+                <h2>{productsLoading?"Loading...":"Products"}</h2>
+                <p>Browse available products</p>
+              </div>
+            </button>
+            {productsError && <p className='error-message'>{productsError}</p>}
+
+          </div>
+
+
+          {profile && (
+            <div className="profile-panel">
+
+              <h2>Profile</h2>
+
+              <div className="profile-info">
+                <span>Name</span>
+                <strong>{profile.name}</strong>
+              </div>
+
+            </div>
+          )}
+
+
+          {products.length > 0 ? (
+            <div className="products-section">
+
+              <h2>Products</h2>
+
+              <div className="products-grid">
+                {products.map((product) => (
+                  <ProductCard
+                    key={product._id}
+                    id={product._id}
+                    name={product.name}
+                    price={product.price}
+                  />
+                ))}
+              </div>
+            </div>
+          ):(!productsLoading && <p>No Products avaiable</p>)
+          }
+
+
+          <button
+            className="logout-button"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+
+        </div>
+      )}
+
+    </div>
   )
 }
 
