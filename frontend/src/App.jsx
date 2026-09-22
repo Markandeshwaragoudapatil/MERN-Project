@@ -21,6 +21,17 @@ function App() {
   const [productsLoading, setProductsLoading] = useState(false);
   const [productsError, setProductsError] = useState("");
 
+  useEffect(()=>{
+    async function fetchProfie() {
+      const response= await fetch("http://localhost:3000/profile",{
+        method:"GET",
+        credentials:"include"
+      })
+      if(response.ok)setAccess(true)
+    }
+    fetchProfie()
+  },[])
+
   useEffect(() => {
     async function fetchProducts() {
         try {
